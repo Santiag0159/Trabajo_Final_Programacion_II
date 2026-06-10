@@ -1,14 +1,11 @@
-/* 
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Other/SQLTemplate.sql to edit this template
- */
+
 /**
  * Author:  Rodri
  * Created: 8 jun. 2026
    La base de datos esta hecha por Nery Lazarini
  */
 
-CREATE DATABASE sistema_hotel;
+
 USE sistema_hotel;
 
 CREATE TABLE usuarios (

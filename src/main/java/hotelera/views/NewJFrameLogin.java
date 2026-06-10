@@ -4,6 +4,13 @@
  */
 package hotelera.views;
 
+import hotelera.main.Conexion;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 /**
  *
  * @author Rodri
@@ -31,11 +38,13 @@ public class NewJFrameLogin extends javax.swing.JFrame {
         jRadioButton1 = new javax.swing.JRadioButton();
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
-        jPasswordField1 = new javax.swing.JPasswordField();
+        txtUsuario = new javax.swing.JTextField();
+        txtPassword = new javax.swing.JPasswordField();
         jButton1 = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        lblMensajeError = new javax.swing.JLabel();
 
         jRadioButton1.setText("jRadioButton1");
 
@@ -48,28 +57,30 @@ public class NewJFrameLogin extends javax.swing.JFrame {
         jLabel1.setForeground(new java.awt.Color(0, 0, 0));
         jLabel1.setText("Inicio de sesion");
 
-        jTextField1.setBackground(new java.awt.Color(168, 201, 244));
-        jTextField1.setForeground(new java.awt.Color(0, 0, 0));
-        jTextField1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(51, 51, 51)));
-        jTextField1.setCaretColor(new java.awt.Color(0, 0, 0));
-        jTextField1.addActionListener(this::jTextField1ActionPerformed);
+        txtUsuario.setBackground(new java.awt.Color(168, 201, 244));
+        txtUsuario.setForeground(new java.awt.Color(0, 0, 0));
+        txtUsuario.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(51, 51, 51)));
+        txtUsuario.setCaretColor(new java.awt.Color(0, 0, 0));
+        txtUsuario.addActionListener(this::txtUsuarioActionPerformed);
 
-        jPasswordField1.setBackground(new java.awt.Color(168, 201, 244));
-        jPasswordField1.setForeground(new java.awt.Color(0, 0, 0));
-        jPasswordField1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(51, 51, 51)));
-        jPasswordField1.setCaretColor(new java.awt.Color(0, 0, 0));
-        jPasswordField1.addActionListener(this::jPasswordField1ActionPerformed);
+        txtPassword.setBackground(new java.awt.Color(168, 201, 244));
+        txtPassword.setForeground(new java.awt.Color(0, 0, 0));
+        txtPassword.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(51, 51, 51)));
+        txtPassword.setCaretColor(new java.awt.Color(0, 0, 0));
+        txtPassword.addActionListener(this::txtPasswordActionPerformed);
 
         jButton1.setBackground(new java.awt.Color(59, 116, 173));
         jButton1.setForeground(new java.awt.Color(255, 255, 255));
         jButton1.setText("Ingresar");
-        jButton1.addActionListener(this::jButton1ActionPerformed);
+        jButton1.addActionListener(this::ingresarUsuario);
 
         jLabel2.setForeground(new java.awt.Color(51, 51, 51));
         jLabel2.setText("Ingrese su usuario");
 
         jLabel3.setForeground(new java.awt.Color(51, 51, 51));
         jLabel3.setText("Ingrese su contraseña");
+
+        jLabel4.setForeground(new java.awt.Color(0, 0, 0));
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -82,8 +93,14 @@ public class NewJFrameLogin extends javax.swing.JFrame {
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel2)
                             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addComponent(jPasswordField1, javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jTextField1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 95, Short.MAX_VALUE))))
+                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createSequentialGroup()
+                                    .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addGap(43, 43, 43))
+                                .addComponent(txtPassword, javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(txtUsuario, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 95, Short.MAX_VALUE)
+                                .addGroup(jPanel1Layout.createSequentialGroup()
+                                    .addComponent(lblMensajeError)
+                                    .addGap(28, 28, 28)))))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(143, 143, 143)
                         .addComponent(jLabel3))
@@ -103,14 +120,18 @@ public class NewJFrameLogin extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(txtUsuario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabel3)
                 .addGap(5, 5, 5)
-                .addComponent(jPasswordField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jButton1)
-                .addContainerGap(81, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
+                .addComponent(lblMensajeError)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel4)
+                .addContainerGap(57, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -127,17 +148,50 @@ public class NewJFrameLogin extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void ingresarUsuario(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ingresarUsuario
         // TODO add your handling code here:
-    }//GEN-LAST:event_jButton1ActionPerformed
+        // 1. Capturas lo que el usuario escribió en la pantalla de Swing
+String user = txtUsuario.getText();
+String pass = new String(txtPassword.getPassword()); // JPasswordField
 
-    private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jTextField1ActionPerformed
+// 2. Llamas a tu conexión de MySQL
+Connection con = Conexion.obtenerConexion();
+String sql = "SELECT * FROM usuarios WHERE username = ? AND password = ?";
 
-    private void jPasswordField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jPasswordField1ActionPerformed
+try {
+    PreparedStatement ps = con.prepareStatement(sql);
+    ps.setString(1, user);
+    ps.setString(2, pass);
+    
+    ResultSet rs = ps.executeQuery();
+    
+    if (rs.next()) {
+        // ¡Login correcto! 
+        System.out.println("Usuario válido.");
+        // Aquí abrirías la ventana principal del hotel y cerrarías el login
+        
+        // Principal ventanaPrincipal = new Principal();
+        // ventanaPrincipal.setVisible(true);
+        // this.dispose();
+        
+    } else {
+        // Datos incorrectos
+        lblMensajeError.setText("Usuario o contraseña incorrectos."); // Un JLabel de Swing
+    }
+    
+    con.close();
+} catch (SQLException ex) {
+    ex.printStackTrace();
+}
+    }//GEN-LAST:event_ingresarUsuario
+
+    private void txtUsuarioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtUsuarioActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jPasswordField1ActionPerformed
+    }//GEN-LAST:event_txtUsuarioActionPerformed
+
+    private void txtPasswordActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtPasswordActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtPasswordActionPerformed
 
     /**
      * @param args the command line arguments
@@ -169,9 +223,11 @@ public class NewJFrameLogin extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPasswordField jPasswordField1;
     private javax.swing.JRadioButton jRadioButton1;
-    private javax.swing.JTextField jTextField1;
+    private javax.swing.JLabel lblMensajeError;
+    private javax.swing.JPasswordField txtPassword;
+    private javax.swing.JTextField txtUsuario;
     // End of variables declaration//GEN-END:variables
 }
