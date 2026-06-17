@@ -4,6 +4,7 @@ hotelera\vistas\RegistrarUsuario.class
 hotelera\modelos\Habitacion.class
 hotelera\main\Conexion.class
 hotelera\bd\ConexionDB.class
+hotelera\vistas\MainFrame$HabitacionesPanel$1.class
 hotelera\vistas\MainFrame$InicioPanel$1.class
 hotelera\vistas\SearchReservaPanel$2.class
 hotelera\vistas\LoginFrame.class
@@ -16,9 +17,9 @@ hotelera\vistas\MainFrame$InicioPanel.class
 hotelera\vistas\MainFrame$ReportesPanel.class
 hotelera\vistas\MainFrame$InicioPanel$3.class
 hotelera\vistas\SearchReservaPanel$BuscadorListener.class
+hotelera\vistas\MainFrame$HabitacionesPanel.class
 hotelera\modelos\Usuario.class
 hotelera\vistas\MainFrame$InicioPanel$2.class
-hotelera\vistas\MainFrame$PlaceholderPanel.class
 hotelera\bd\ClienteDAO.class
 hotelera\vistas\SearchReservaPanel.class
 hotelera\vistas\SearchReservaPanel$1.class
@@ -27,6 +28,7 @@ hotelera\bd\HabitacionDAO.class
 hotelera\modelos\Clientes.class
 hotelera\views\NewJFrameLogin.class
 hotelera\vistas\ReservaFrame.class
+hotelera\vistas\PlaceholderPanel.class
 hotelera\vistas\MainFrame$ReservaPanel.class
 hotelera\util\Calculadorprecio.class
 hotelera\vistas\EditarReservaFrame.class

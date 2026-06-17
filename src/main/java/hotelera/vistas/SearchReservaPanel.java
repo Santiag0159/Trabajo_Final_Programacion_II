@@ -136,7 +136,7 @@ public class SearchReservaPanel extends JPanel {
         }
     }
 
-    private void realizarBusqueda() {
+    public void realizarBusqueda() {
         String dni = txtDni.getText().trim();
         String nombre = txtNombre.getText().trim();
         String habitacionStr = txtHabitacion.getText().trim();

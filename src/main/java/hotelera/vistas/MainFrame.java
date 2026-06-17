@@ -11,6 +11,8 @@ public class MainFrame extends JFrame {
     private JPanel panelContenido;
     private InicioPanel panelInicio;
     private Usuario usuarioActual;  // usuario logueado
+    private SearchReservaPanel panelBusqueda;
+    private HabitacionesPanel panelHabitaciones;
 
     public MainFrame(Usuario usuario) {
         this.usuarioActual = usuario;
@@ -38,14 +40,16 @@ public class MainFrame extends JFrame {
         panelInicio = new InicioPanel();
         panelContenido.add(panelInicio, "inicio");
         panelContenido.add(new ReservaPanel(), "reservas");
-        panelContenido.add(new SearchReservaPanel(), "busqueda");
+        panelBusqueda = new SearchReservaPanel();
+        panelContenido.add(panelBusqueda, "busqueda");
         
         // Solo si es administrador, agregar Reportes
         if (usuarioActual != null && "administrador".equals(usuarioActual.getRol())) {
             panelContenido.add(new ReportesPanel(), "reportes");
         }
         
-        panelContenido.add(new HabitacionesPanel(), "habitaciones");
+        panelHabitaciones = new HabitacionesPanel();
+        panelContenido.add(panelHabitaciones, "habitaciones");
         // Paneles placeholder (se pueden implementar después)
         
         
@@ -85,12 +89,16 @@ public class MainFrame extends JFrame {
             JButton btn = crearBotonSidebar(opciones[i]);
             final String cardName = cardNames[i];
             
-            btn.addActionListener(e -> {
+        btn.addActionListener(e -> {
                 cardLayout.show(panelContenido, cardName);
                 
-                // MAGIA: Si el usuario tocó el botón "Inicio", obligamos a recargar la tabla
+                // MAGIA EXPANDIDA: Obligamos a recargar la base de datos según qué pestaña se tocó
                 if ("inicio".equals(cardName)) {
                     panelInicio.actualizarTabla(); 
+                } else if ("busqueda".equals(cardName)) {
+                    panelBusqueda.realizarBusqueda(); // Mantiene los filtros pero trae datos frescos
+                } else if ("habitaciones".equals(cardName)) {
+                    panelHabitaciones.cargarHabitaciones(); // Pinta las habitaciones de nuevo
                 }
             });
             
@@ -385,7 +393,7 @@ public class MainFrame extends JFrame {
         return item;
     }
 
-    private void cargarHabitaciones() {
+    public void cargarHabitaciones() {
         gridPanel.removeAll();
         HabitacionDAO habDao = new HabitacionDAO();
         ReservaDAO reservaDao = new ReservaDAO();
