@@ -42,9 +42,7 @@ public class MainFrame extends JFrame {
             panelContenido.add(new ReportesPanel(), "reportes");
         }
         
-        // Paneles placeholder (se pueden implementar después)
-        panelContenido.add(new PlaceholderPanel("Búsqueda de reservas (próximamente)"), "busqueda");
-        panelContenido.add(new PlaceholderPanel("Gestión de habitaciones (próximamente)"), "habitaciones");
+        panelContenido.add(new HabitacionesPanel(), "habitaciones");
         
         mainPanel.add(panelContenido, BorderLayout.CENTER);
         add(mainPanel);
@@ -214,13 +212,108 @@ public class MainFrame extends JFrame {
         }
     }
     
-    // Panel placeholder para futuras implementaciones
-    class PlaceholderPanel extends JPanel {
-        public PlaceholderPanel(String texto) {
-            setLayout(new GridBagLayout());
-            add(new JLabel(texto));
-        }
+    class HabitacionesPanel extends JPanel {
+    private JPanel gridPanel;
+    private JLabel lblEstado;
+
+    public HabitacionesPanel() {
+        setLayout(new BorderLayout(10, 10));
+        setBackground(new Color(245, 245, 245));
+        setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+
+        // Panel superior con título y leyenda
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.setBackground(new Color(245, 245, 245));
+        JLabel titulo = new JLabel("Planta de Habitaciones - Estado Actual");
+        titulo.setFont(new Font("Arial", Font.BOLD, 18));
+        topPanel.add(titulo, BorderLayout.WEST);
+
+        // Leyenda de colores
+        JPanel leyenda = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        leyenda.setBackground(new Color(245, 245, 245));
+        leyenda.add(crearLeyenda("Disponible", new Color(46, 204, 113)));
+        leyenda.add(crearLeyenda("Ocupada", new Color(231, 76, 60)));
+        topPanel.add(leyenda, BorderLayout.EAST);
+        add(topPanel, BorderLayout.NORTH);
+
+        // Panel central con las habitaciones
+        gridPanel = new JPanel();
+        gridPanel.setLayout(new GridLayout(0, 5, 10, 10)); // 5 columnas, filas automáticas
+        gridPanel.setBackground(new Color(245, 245, 245));
+        JScrollPane scroll = new JScrollPane(gridPanel);
+        scroll.setBorder(null);
+        add(scroll, BorderLayout.CENTER);
+
+        // Cargar habitaciones
+        cargarHabitaciones();
     }
+
+    private JPanel crearLeyenda(String texto, Color color) {
+        JPanel item = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        item.setBackground(new Color(245, 245, 245));
+        JLabel colorBox = new JLabel("   ");
+        colorBox.setOpaque(true);
+        colorBox.setBackground(color);
+        colorBox.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        colorBox.setPreferredSize(new Dimension(20, 20));
+        JLabel label = new JLabel(texto);
+        item.add(colorBox);
+        item.add(label);
+        return item;
+    }
+
+    private void cargarHabitaciones() {
+        gridPanel.removeAll();
+        HabitacionDAO habDao = new HabitacionDAO();
+        ReservaDAO reservaDao = new ReservaDAO();
+        List<Habitacion> habitaciones = habDao.listarTodas();
+        List<Integer> ocupadasHoy = reservaDao.getHabitacionesOcupadasHoy();
+
+        for (Habitacion h : habitaciones) {
+            boolean ocupada = ocupadasHoy.contains(h.getIdHabitacion());
+            JPanel card = crearCard(h, ocupada);
+            gridPanel.add(card);
+        }
+        gridPanel.revalidate();
+        gridPanel.repaint();
+    }
+
+    private JPanel crearCard(Habitacion h, boolean ocupada) {
+        JPanel card = new JPanel(new BorderLayout());
+        card.setBackground(ocupada ? new Color(231, 76, 60) : new Color(46, 204, 113));
+        card.setBorder(BorderFactory.createLineBorder(Color.WHITE, 3));
+        card.setPreferredSize(new Dimension(100, 100));
+
+        // Número de habitación (grande, centrado)
+        JLabel numero = new JLabel(String.valueOf(h.getNumero()));
+        numero.setFont(new Font("Arial", Font.BOLD, 28));
+        numero.setForeground(Color.WHITE);
+        numero.setHorizontalAlignment(SwingConstants.CENTER);
+        card.add(numero, BorderLayout.CENTER);
+
+        // Tipo de habitación (abajo, pequeño)
+        JLabel tipo = new JLabel(h.getTipo());
+        tipo.setFont(new Font("Arial", Font.PLAIN, 12));
+        tipo.setForeground(Color.WHITE);
+        tipo.setHorizontalAlignment(SwingConstants.CENTER);
+        card.add(tipo, BorderLayout.SOUTH);
+
+        // Tooltip con más info
+        String estadoTexto = ocupada ? "Ocupada" : "Disponible";
+        card.setToolTipText("Habitación " + h.getNumero() + " - " + h.getTipo() + " - " + estadoTexto + " ($" + h.getPrecio() + "/noche)");
+
+        // Evento de clic para mostrar detalles
+        card.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                JOptionPane.showMessageDialog(HabitacionesPanel.this,
+                    "Habitación " + h.getNumero() + "\nTipo: " + h.getTipo() +
+                    "\nPrecio: $" + h.getPrecio() + "\nEstado: " + estadoTexto);
+            }
+        });
+
+        return card;
+    }
+}
     
     // ReportesPanel (solo visible para admin)
     class ReportesPanel extends JPanel {

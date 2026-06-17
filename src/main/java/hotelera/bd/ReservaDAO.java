@@ -139,4 +139,18 @@ public class ReservaDAO {
     } catch (SQLException e) { e.printStackTrace(); }
     return 0;
     }
+    public List<Integer> getHabitacionesOcupadasHoy(){
+        List<Integer> ids = new ArrayList<>();
+        String sql = "SELECT DISTINCT id_habitacion FROM reservas WHERE estado = 'activa' AND fecha_ingreso <= CURDATE() AND fecha_salida >= CURDATE()";
+    try (Connection conn = ConexionDB.conectar();
+         PreparedStatement ps = conn.prepareStatement(sql);
+         ResultSet rs = ps.executeQuery()) {
+        while (rs.next()) {
+            ids.add(rs.getInt("id_habitacion"));
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return ids;
+    }
 }
