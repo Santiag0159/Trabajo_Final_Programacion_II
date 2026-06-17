@@ -9,6 +9,7 @@ import java.util.List;
 public class MainFrame extends JFrame {
     private CardLayout cardLayout;
     private JPanel panelContenido;
+    private InicioPanel panelInicio;
     private Usuario usuarioActual;  // usuario logueado
 
     public MainFrame(Usuario usuario) {
@@ -34,7 +35,8 @@ public class MainFrame extends JFrame {
         panelContenido.setBackground(new Color(245, 245, 245));
         
         // Agregar paneles
-        panelContenido.add(new InicioPanel(), "inicio");
+        panelInicio = new InicioPanel();
+        panelContenido.add(panelInicio, "inicio");
         panelContenido.add(new ReservaPanel(), "reservas");
         
         // Solo si es administrador, agregar Reportes
@@ -81,7 +83,16 @@ public class MainFrame extends JFrame {
         for (int i = 0; i < opciones.length; i++) {
             JButton btn = crearBotonSidebar(opciones[i]);
             final String cardName = cardNames[i];
-            btn.addActionListener(e -> cardLayout.show(panelContenido, cardName));
+            
+            btn.addActionListener(e -> {
+                cardLayout.show(panelContenido, cardName);
+                
+                // MAGIA: Si el usuario tocó el botón "Inicio", obligamos a recargar la tabla
+                if ("inicio".equals(cardName)) {
+                    panelInicio.actualizarTabla(); 
+                }
+            });
+            
             sidebar.add(btn);
             sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
         }
@@ -130,38 +141,68 @@ public class MainFrame extends JFrame {
     // ==================== PANELES ====================
     
     class InicioPanel extends JPanel {
+        private JTable tablaInicio;
+        // 1. Variables para poder modificar los números después
+        private JLabel lblActivas;
+        private JLabel lblOcupadas;
+        private JLabel lblDisponibles;
+
         public InicioPanel() {
             setLayout(new GridBagLayout());
             setBackground(new Color(245, 245, 245));
+
+            // Inicializamos los textos en "0"
+            lblActivas = crearLabelNumero();
+            lblOcupadas = crearLabelNumero();
+            lblDisponibles = crearLabelNumero();
+
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.insets = new Insets(15,15,15,15);
             gbc.gridx = 0; gbc.gridy = 0;
             gbc.anchor = GridBagConstraints.NORTHWEST;
-            
-            // Obtener datos reales
-            ReservaDAO reservaDAO = new ReservaDAO();
-            HabitacionDAO habDAO = new HabitacionDAO();
-            long reservasActivas = reservaDAO.contarReservasActivas(); // nuevo método
-            long habitacionesOcupadas = reservaDAO.contarHabitacionesOcupadas(); // nuevo método
-            long totalHabitaciones = habDAO.contarTotalHabitaciones(); // nuevo método
-            long disponibles = totalHabitaciones - habitacionesOcupadas;
-            
-            add(crearTarjeta("Reservas activas", String.valueOf(reservasActivas), new Color(52, 152, 219)), gbc);
+
+            // Creamos las tarjetas pasándoles nuestras variables
+            add(crearTarjeta("Reservas activas", lblActivas, new Color(52, 152, 219)), gbc);
             gbc.gridx = 1;
-            add(crearTarjeta("Habitaciones ocupadas", String.valueOf(habitacionesOcupadas), new Color(46, 204, 113)), gbc);
+            add(crearTarjeta("Habitaciones ocupadas", lblOcupadas, new Color(46, 204, 113)), gbc);
             gbc.gridx = 2;
-            add(crearTarjeta("Habitaciones disponibles", String.valueOf(disponibles), new Color(241, 176, 26)), gbc);
-            
-            // Tabla de próximas reservas
+            add(crearTarjeta("Habitaciones disponibles", lblDisponibles, new Color(241, 176, 26)), gbc);
+
             gbc.gridx = 0; gbc.gridy = 1;
             gbc.gridwidth = 3;
             gbc.fill = GridBagConstraints.BOTH;
             gbc.weightx = 1;
             gbc.weighty = 1;
             add(crearTablaProximasReservas(), gbc);
+
+            JPanel panelBotones = new JPanel();
+            JButton btnEditar = new JButton("Editar Reserva");
+            JButton btnCancelar = new JButton("Cancelar Reserva");
+            panelBotones.add(btnEditar);
+            panelBotones.add(btnCancelar);
+
+            gbc.gridy = 2;
+            gbc.weighty = 0;
+            add(panelBotones, gbc);
+
+            btnCancelar.addActionListener(e -> cancelarReserva());
+            btnEditar.addActionListener(e -> editarReserva());
+
+            // 2. Cargamos los números reales de la base de datos al iniciar
+            actualizarEstadisticas();
         }
-        
-        private JPanel crearTarjeta(String titulo, String valor, Color color) {
+
+        // Método auxiliar para no repetir código visual
+        private JLabel crearLabelNumero() {
+            JLabel lbl = new JLabel("0");
+            lbl.setForeground(Color.WHITE);
+            lbl.setFont(new Font("Arial", Font.BOLD, 28));
+            lbl.setHorizontalAlignment(SwingConstants.RIGHT);
+            return lbl;
+        }
+
+        // Método modificado para recibir el JLabel
+        private JPanel crearTarjeta(String titulo, JLabel lblValor, Color color) {
             JPanel card = new JPanel(new BorderLayout());
             card.setBackground(color);
             card.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
@@ -169,32 +210,53 @@ public class MainFrame extends JFrame {
             JLabel lblTitulo = new JLabel(titulo);
             lblTitulo.setForeground(Color.WHITE);
             lblTitulo.setFont(new Font("Arial", Font.PLAIN, 14));
-            JLabel lblValor = new JLabel(valor);
-            lblValor.setForeground(Color.WHITE);
-            lblValor.setFont(new Font("Arial", Font.BOLD, 28));
-            lblValor.setHorizontalAlignment(SwingConstants.RIGHT);
             card.add(lblTitulo, BorderLayout.NORTH);
             card.add(lblValor, BorderLayout.CENTER);
             return card;
         }
-        
+
+        // 3. El método mágico que busca los datos frescos y los pone en las tarjetas
+        private void actualizarEstadisticas() {
+            ReservaDAO reservaDAO = new ReservaDAO();
+            HabitacionDAO habDAO = new HabitacionDAO();
+            long activas = reservaDAO.contarReservasActivas(); 
+            long ocupadas = reservaDAO.contarHabitacionesOcupadas(); 
+            long totales = habDAO.contarTotalHabitaciones(); 
+
+            lblActivas.setText(String.valueOf(activas));
+            lblOcupadas.setText(String.valueOf(ocupadas));
+            lblDisponibles.setText(String.valueOf(totales - ocupadas));
+        }
+
         private JScrollPane crearTablaProximasReservas() {
             String[] columnas = {"ID", "Cliente", "Habitación", "Ingreso", "Salida", "Estado"};
             Object[][] datos = obtenerDatosReservas();
-            JTable tabla = new JTable(datos, columnas);
-            tabla.setFillsViewportHeight(true);
-            tabla.setRowHeight(30);
-            JScrollPane scroll = new JScrollPane(tabla);
+            javax.swing.table.DefaultTableModel modelo = new javax.swing.table.DefaultTableModel(datos, columnas) {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false;
+                }
+            };
+            tablaInicio = new JTable(modelo);
+            tablaInicio.setFillsViewportHeight(true);
+            tablaInicio.setRowHeight(30);
+            JScrollPane scroll = new JScrollPane(tablaInicio);
             scroll.setBorder(BorderFactory.createTitledBorder("Próximas reservas"));
             return scroll;
         }
-        
+
         private Object[][] obtenerDatosReservas() {
             ReservaDAO dao = new ReservaDAO();
-            List<Reserva> reservas = dao.listarTodas();
-            Object[][] data = new Object[reservas.size()][6];
-            for (int i = 0; i < reservas.size(); i++) {
-                Reserva r = reservas.get(i);
+            java.util.List<Reserva> todas = dao.listarTodas();
+            java.util.List<Reserva> activas = new java.util.ArrayList<>();
+            for (Reserva r : todas) {
+                if ("activa".equalsIgnoreCase(r.getEstado())) {
+                    activas.add(r);
+                }
+            }
+            Object[][] data = new Object[activas.size()][6];
+            for (int i = 0; i < activas.size(); i++) {
+                Reserva r = activas.get(i);
                 data[i][0] = r.getIdReserva();
                 data[i][1] = r.getCliente().getNombre() + " " + r.getCliente().getApellido();
                 data[i][2] = r.getHabitacion().getNumero();
@@ -204,7 +266,65 @@ public class MainFrame extends JFrame {
             }
             return data;
         }
-    }
+
+        private void cancelarReserva() {
+            int filaSeleccionada = tablaInicio.getSelectedRow();
+            if (filaSeleccionada == -1) {
+                JOptionPane.showMessageDialog(this, "Por favor, seleccioná una reserva de la tabla primero.");
+                return;
+            }
+            int idReserva = (int) tablaInicio.getValueAt(filaSeleccionada, 0);
+            ReservaDAO dao = new ReservaDAO();
+            int confirmacion = JOptionPane.showConfirmDialog(this, "¿Estás seguro de que querés cancelar la reserva #" + idReserva + "?", "Confirmar", JOptionPane.YES_NO_OPTION);
+
+            if (confirmacion == JOptionPane.YES_OPTION) {
+                if (dao.cancelar(idReserva)) { 
+                    JOptionPane.showMessageDialog(this, "Reserva cancelada con éxito.");
+                    actualizarTabla(); 
+                } else {
+                    JOptionPane.showMessageDialog(this, "Hubo un error al cancelar la reserva.");
+                }
+            }
+        }
+
+        private void editarReserva() {
+            int filaSeleccionada = tablaInicio.getSelectedRow();
+            if (filaSeleccionada == -1) {
+                JOptionPane.showMessageDialog(this, "Seleccioná una reserva para editar.");
+                return;
+            }
+            int idReserva = (int) tablaInicio.getValueAt(filaSeleccionada, 0);
+            ReservaDAO dao = new ReservaDAO();
+            Reserva reservaAEditar = dao.obtenerPorId(idReserva); 
+
+            if (reservaAEditar != null) {
+                EditarReservaFrame ventanaEdicion = new EditarReservaFrame(reservaAEditar);
+                ventanaEdicion.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                ventanaEdicion.addWindowListener(new java.awt.event.WindowAdapter() {
+                    @Override
+                    public void windowClosed(java.awt.event.WindowEvent windowEvent) {
+                        actualizarTabla();
+                    }
+                });
+                ventanaEdicion.setVisible(true);
+            }
+        }
+
+        public void actualizarTabla() {
+            String[] columnas = {"ID", "Cliente", "Habitación", "Ingreso", "Salida", "Estado"};
+            Object[][] datos = obtenerDatosReservas();
+            javax.swing.table.DefaultTableModel modelo = new javax.swing.table.DefaultTableModel(datos, columnas) {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false;
+                }
+            };
+            tablaInicio.setModel(modelo);
+
+            // 4. EL TRUCO FINAL: Al actualizar la tabla, también actualizamos los cuadros
+            actualizarEstadisticas();
+        }
+}
     
     class ReservaPanel extends JPanel {
         public ReservaPanel() {

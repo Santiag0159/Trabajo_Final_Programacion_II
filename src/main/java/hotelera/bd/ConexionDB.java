@@ -5,9 +5,9 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class ConexionDB {
-    private static final String URL = "jdbc:mysql://localhost:3306/hotelera?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
+    private static final String URL = "jdbc:mysql://localhost:3306/sistema_hotel?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
     private static final String USER = "root";
-    private static final String PASSWORD = "1231Santi"; // mi contraseña
+    private static final String PASSWORD = ""; // mi contraseña
     
     public static Connection conectar() {
         try {

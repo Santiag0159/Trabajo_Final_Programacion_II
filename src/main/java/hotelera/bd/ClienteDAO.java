@@ -49,4 +49,20 @@ public class ClienteDAO {
         }
         return false;
     }
+    
+    public boolean actualizar(Clientes cliente) {
+        String sql = "UPDATE clientes SET nombre=?, apellido=?, email=?, telefono=? WHERE dni=?";
+        try (Connection conn = ConexionDB.conectar();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, cliente.getNombre());
+            ps.setString(2, cliente.getApellido());
+            ps.setString(3, cliente.getEmail());
+            ps.setString(4, cliente.getTelefono());
+            ps.setString(5, cliente.getDni());
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
