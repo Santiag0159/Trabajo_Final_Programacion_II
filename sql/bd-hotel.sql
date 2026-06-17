@@ -35,7 +35,7 @@ CREATE TABLE reservas (
     id_reserva INT AUTO_INCREMENT PRIMARY KEY,
     id_cliente INT,
     id_habitacion INT,
-    fecha_ingreso DATE NOT NULL DEFAULT CURRENT_DATE,
+    fecha_ingreso DATE NOT NULL,
     fecha_salida DATE,
     FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente),
     FOREIGN KEY (id_habitacion) REFERENCES habitaciones(id_habitacion)
