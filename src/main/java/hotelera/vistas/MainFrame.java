@@ -38,6 +38,7 @@ public class MainFrame extends JFrame {
         panelInicio = new InicioPanel();
         panelContenido.add(panelInicio, "inicio");
         panelContenido.add(new ReservaPanel(), "reservas");
+        panelContenido.add(new SearchReservaPanel(), "busqueda");
         
         // Solo si es administrador, agregar Reportes
         if (usuarioActual != null && "administrador".equals(usuarioActual.getRol())) {
@@ -45,6 +46,8 @@ public class MainFrame extends JFrame {
         }
         
         panelContenido.add(new HabitacionesPanel(), "habitaciones");
+        // Paneles placeholder (se pueden implementar después)
+        
         
         mainPanel.add(panelContenido, BorderLayout.CENTER);
         add(mainPanel);

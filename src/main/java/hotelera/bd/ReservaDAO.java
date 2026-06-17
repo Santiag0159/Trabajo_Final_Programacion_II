@@ -153,4 +153,109 @@ public class ReservaDAO {
     }
     return ids;
     }
+    
+    // ============ MÉTODOS DE BÚSQUEDA CON LIKE ============
+    
+    public List<Reserva> buscarPorDni(String dni) {
+        List<Reserva> list = new ArrayList<>();
+        String sql = "SELECT r.*, c.*, h.* FROM reservas r "
+                   + "JOIN clientes c ON r.id_cliente = c.id_cliente "
+                   + "JOIN habitaciones h ON r.id_habitacion = h.id_habitacion "
+                   + "WHERE c.dni LIKE ?";
+        try (Connection conn = ConexionDB.conectar();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, "%" + dni + "%");
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(mapearReserva(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+    
+    public List<Reserva> buscarPorNombre(String nombre) {
+        List<Reserva> list = new ArrayList<>();
+        String sql = "SELECT r.*, c.*, h.* FROM reservas r "
+                   + "JOIN clientes c ON r.id_cliente = c.id_cliente "
+                   + "JOIN habitaciones h ON r.id_habitacion = h.id_habitacion "
+                   + "WHERE CONCAT(c.nombre, ' ', c.apellido) LIKE ?";
+        try (Connection conn = ConexionDB.conectar();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, "%" + nombre + "%");
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(mapearReserva(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+    
+    public List<Reserva> buscarPorHabitacion(int numeroHabitacion) {
+        List<Reserva> list = new ArrayList<>();
+        String sql = "SELECT r.*, c.*, h.* FROM reservas r "
+                   + "JOIN clientes c ON r.id_cliente = c.id_cliente "
+                   + "JOIN habitaciones h ON r.id_habitacion = h.id_habitacion "
+                   + "WHERE h.numero = ?";
+        try (Connection conn = ConexionDB.conectar();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, numeroHabitacion);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(mapearReserva(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+    
+    public List<Reserva> buscarCombinado(String dni, String nombre, Integer numeroHabitacion) {
+        List<Reserva> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder(
+            "SELECT r.*, c.*, h.* FROM reservas r "
+            + "JOIN clientes c ON r.id_cliente = c.id_cliente "
+            + "JOIN habitaciones h ON r.id_habitacion = h.id_habitacion "
+            + "WHERE 1=1"
+        );
+        
+        try (Connection conn = ConexionDB.conectar();
+             PreparedStatement ps = conn.prepareStatement(buildSearchQuery(sql, dni, nombre, numeroHabitacion))) {
+            
+            int index = 1;
+            if (dni != null && !dni.isEmpty()) {
+                ps.setString(index++, "%" + dni + "%");
+            }
+            if (nombre != null && !nombre.isEmpty()) {
+                ps.setString(index++, "%" + nombre + "%");
+            }
+            if (numeroHabitacion != null) {
+                ps.setInt(index++, numeroHabitacion);
+            }
+            
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(mapearReserva(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+    
+    private String buildSearchQuery(StringBuilder sql, String dni, String nombre, Integer numeroHabitacion) {
+        if (dni != null && !dni.isEmpty()) {
+            sql.append(" AND c.dni LIKE ?");
+        }
+        if (nombre != null && !nombre.isEmpty()) {
+            sql.append(" AND CONCAT(c.nombre, ' ', c.apellido) LIKE ?");
+        }
+        if (numeroHabitacion != null) {
+            sql.append(" AND h.numero = ?");
+        }
+        return sql.toString();
+    }
 }
