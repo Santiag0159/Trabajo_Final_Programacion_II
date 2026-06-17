@@ -33,7 +33,7 @@ public class SearchReservaPanel extends JPanel {
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         
-        // Panel de búsqueda
+        
         JPanel panelBusqueda = new JPanel(new GridBagLayout());
         panelBusqueda.setBorder(BorderFactory.createTitledBorder("Filtros de Búsqueda"));
         GridBagConstraints gbc = new GridBagConstraints();
@@ -42,7 +42,7 @@ public class SearchReservaPanel extends JPanel {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1;
         
-        // DNI
+        
         gbc.gridx = 0;
         gbc.gridy = 0;
         panelBusqueda.add(new JLabel("DNI Cliente:"), gbc);
@@ -50,28 +50,28 @@ public class SearchReservaPanel extends JPanel {
         txtDni = new JTextField(15);
         panelBusqueda.add(txtDni, gbc);
         
-        // Nombre
+        
         gbc.gridx = 2;
         panelBusqueda.add(new JLabel("Nombre/Apellido:"), gbc);
         gbc.gridx = 3;
         txtNombre = new JTextField(15);
         panelBusqueda.add(txtNombre, gbc);
         
-        // Habitación
+        
         gbc.gridx = 4;
         panelBusqueda.add(new JLabel("Nº Habitación:"), gbc);
         gbc.gridx = 5;
         txtHabitacion = new JTextField(10);
         panelBusqueda.add(txtHabitacion, gbc);
         
-        // Botón limpiar
+        
         gbc.gridx = 6;
         btnLimpiar = new JButton("Limpiar");
         panelBusqueda.add(btnLimpiar, gbc);
         
         add(panelBusqueda, BorderLayout.NORTH);
         
-        // Panel de tabla
+        
         JPanel panelTabla = new JPanel(new BorderLayout());
         panelTabla.setBorder(BorderFactory.createTitledBorder("Resultados"));
         
@@ -93,7 +93,7 @@ public class SearchReservaPanel extends JPanel {
         
         add(panelTabla, BorderLayout.CENTER);
         
-        // Panel de botones de acción
+        
         JPanel panelBotones = new JPanel();
         btnEditar = new JButton("Editar");
         btnCancelar = new JButton("Cancelar Reserva");
@@ -236,7 +236,7 @@ public class SearchReservaPanel extends JPanel {
         }
 
         private void buscarConDelay() {
-            // Esperar 300ms sin cambios antes de buscar (optimización)
+            
             if (timerBusqueda != null) {
                 timerBusqueda.stop();
             }
